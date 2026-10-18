@@ -1,0 +1,40 @@
+{
+  "name": "Nuvola Diary",
+  "short_name": "Nuvola",
+  "description": "A private journal with real-time mood insights and an optional on-device AI coach. Nothing ever leaves your device.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
+  "orientation": "any",
+  "background_color": "#F7F6F2",
+  "theme_color": "#F7F6F2",
+  "categories": [
+    "lifestyle",
+    "health",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "name": "nuvola-diary",
+  "version": "1.0.0",
+  "description": "A private, local-first journaling sanctuary for desktop.",
+  "main": "electron-main.cjs",
+  "author": "Nuvola Diary",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never",
+    "dist:win": "electron-builder --win msi nsis portable --publish never",
+    "dist:mac": "electron-builder --mac dmg zip --publish never",
+    "dist:linux": "electron-builder --linux AppImage deb --publish never"
+  },
+  "devDependencies": {
+    "electron": "^35.2.1",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "app.nuvoladiary.desktop",
+    "productName": "Nuvola Diary",
+    "asar": true,
+    "files": [
+      "electron-main.cjs",
+      "index.html",
+      "app.html",
+      "landing.html",
+      "manifest.webmanifest",
+      "icon.svg",
+      "sw.js",
+      "README.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "artifactName": "Nuvola-Diary-${version}-${os}-${arch}.${ext}",
+    "win": {
+      "target": [
+        "msi",
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.lifestyle"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility",
+      "synopsis": "A private, local-first journal"
+    },
+    "msi": {
+      "oneClick": false,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "Nuvola Diary",
+      "upgradeCode": "{6A14D3F2-8C91-4A5E-9B70-2F7C1D8E4A63}"
+    }
+  }
+}

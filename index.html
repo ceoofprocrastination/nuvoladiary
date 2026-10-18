@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Nuvola Diary — a journal that never leaves your device</title>
+<meta name="description" content="A minimalist journal with real-time mood insights and an optional on-device AI coach. No account, no server, nothing ever uploaded." />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: { extend: {
+    colors: { paper:'var(--paper)', ink:'var(--ink)', mist:'var(--mist)', sky:'var(--sky)', dusk:'var(--dusk)', card:'var(--card)' },
+    fontFamily: { serif:['Georgia','Cambria','serif'] }
+  } }
+};
+</script>
+<style>
+  :root { --paper:#F7F6F2; --ink:#23262B; --mist:#8A93A6; --sky:#5B7DB1; --dusk:#E4E8F0; --card:#FFFFFF; }
+  html.dark { --paper:#1B1D22; --ink:#EDEDEF; --mist:#8D93A3; --sky:#7FA0D6; --dusk:#2D3038; --card:#24262C; }
+  body { background:var(--paper); color:var(--ink); font-family: system-ui, sans-serif; }
+  @media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+  button:focus-visible, a:focus-visible { outline:2px solid var(--sky); outline-offset:2px; }
+  .cloud { position:absolute; border-radius:999px; filter:blur(0px); opacity:.5; }
+  html.dark .cloud { opacity:.12; }
+
+  /* ---- Demo mock (used only if assets/demo.gif is missing) ---- */
+  .demo-frame { aspect-ratio: 9/17; background:var(--card); }
+  .demo-caret { animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity:0; } }
+  .demo-line { overflow:hidden; white-space:nowrap; width:0; animation: type 2.4s steps(30,end) infinite; }
+  @keyframes type { 0%,4% { width:0 } 45%,60% { width:100% } 95%,100% { width:0 } }
+  .demo-bar { transform-origin:bottom; animation: grow 3.6s ease-in-out infinite; }
+  @keyframes grow { 0%,10% { transform:scaleY(.15) } 55%,75% { transform:scaleY(1) } 100% { transform:scaleY(1) } }
+
+  /* Nuvola's tactile, springy landing-page layer */
+  :root { --paper:#f8f5ef; --ink:#282a35; --mist:#777c8d; --sky:#7d8fd0; --dusk:#e6e2eb; --card:#fffefa; --rose:#e9b8b5; --sage:#cbd8c7; }
+  html.dark { --paper:#171922; --ink:#f1eff6; --mist:#a5a8b8; --sky:#a8b8ff; --dusk:#303343; --card:#222532; --rose:#9c6f7b; --sage:#596e66; }
+  html { scroll-behavior:smooth; }
+  body { overflow-x:hidden; background:var(--paper); background-image:radial-gradient(ellipse at 12% 6%, color-mix(in srgb, var(--rose) 15%, transparent), transparent 32rem), radial-gradient(ellipse at 88% 19%, color-mix(in srgb, var(--sky) 13%, transparent), transparent 36rem); }
+  .site-header { position:relative; z-index:5; }
+  .brand-mark { display:grid;place-items:center;width:35px;height:35px;border:1px solid color-mix(in srgb,var(--sky) 28%,var(--dusk));border-radius:13px;background:color-mix(in srgb,var(--card) 82%,transparent);box-shadow:0 4px 14px #565c8220; }
+  .hero-shell { max-width:1160px; padding-top:clamp(3.5rem,8vw,7.5rem); padding-bottom:clamp(4rem,8vw,7.5rem); }
+  .hero-kicker { display:inline-flex;align-items:center;gap:.55rem;padding:.45rem .8rem;border:1px solid color-mix(in srgb,var(--sky) 22%,var(--dusk));border-radius:999px;background:color-mix(in srgb,var(--card) 75%,transparent);font-size:.76rem;letter-spacing:.045em;color:var(--mist);box-shadow:0 5px 18px #44465b0a; }
+  .kicker-dot { width:7px;height:7px;border-radius:50%;background:#91ad91;box-shadow:0 0 0 4px #91ad9124; }
+  .hero-title { max-width:640px;font-size:clamp(3.1rem,6.6vw,6.25rem);line-height:.98;letter-spacing:-.065em;font-weight:400; }
+  .hero-title em { font-weight:400;color:var(--sky);position:relative;white-space:nowrap; }
+  .hero-title em:after { content:"";position:absolute;left:2%;right:-2%;height:.12em;bottom:.01em;border-radius:50%;background:color-mix(in srgb,var(--rose) 78%,transparent);transform:rotate(-2deg);z-index:-1; }
+  .hero-copy { max-width:450px;font-size:clamp(1rem,1.4vw,1.15rem);line-height:1.85;color:var(--mist); }
+  .primary-cta { position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;gap:.75rem;background:var(--ink);color:var(--paper);box-shadow:0 8px 0 color-mix(in srgb,var(--ink) 14%,transparent),0 18px 34px #38394a24;transition:transform .28s cubic-bezier(.2,1.8,.45,1),box-shadow .28s,background .2s; }
+  .primary-cta:before { content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,#ffffff22 48%,transparent 72%);transform:translateX(-120%);transition:transform .7s ease;z-index:-1; }
+  .primary-cta:hover { transform:translateY(-4px) scale(1.025);box-shadow:0 12px 0 color-mix(in srgb,var(--ink) 12%,transparent),0 24px 40px #38394a2b; }
+  .primary-cta:hover:before { transform:translateX(120%); }
+  .primary-cta:active { transform:translateY(3px) scale(.985);box-shadow:0 3px 0 color-mix(in srgb,var(--ink) 12%,transparent),0 7px 16px #38394a18; }
+  .secondary-cta { transition:transform .25s cubic-bezier(.2,1.8,.45,1),color .2s; }
+  .secondary-cta:hover { transform:translateX(4px); }
+  .hero-art { min-height:530px;position:relative;display:grid;place-items:center;perspective:1200px;isolation:isolate; }
+  .art-halo { position:absolute;width:min(43vw,490px);aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff9 0, color-mix(in srgb,var(--sky) 19%,transparent) 28%, color-mix(in srgb,var(--rose) 18%,transparent) 56%,transparent 72%);filter:blur(2px);animation:halo-breathe 7s ease-in-out infinite;z-index:-2; }
+  .orbit { position:absolute;width:440px;height:440px;border:1px solid color-mix(in srgb,var(--sky) 20%,transparent);border-radius:50%;transform:rotate(-25deg) scaleY(.45);z-index:-1; }
+  .orbit:after { content:"";position:absolute;width:11px;height:11px;top:16%;left:13%;border-radius:50%;background:var(--rose);box-shadow:0 0 0 7px color-mix(in srgb,var(--rose) 18%,transparent); }
+  .journal-stage { width:min(100%,380px);position:relative;transform-style:preserve-3d;animation:journal-float 6.4s cubic-bezier(.42,0,.25,1) infinite;will-change:transform; }
+  .journal-shadow { position:absolute;left:9%;right:1%;height:28px;bottom:-22px;border-radius:50%;background:#35334830;filter:blur(18px);transform:rotate(-7deg);animation:shadow-breathe 6.4s ease-in-out infinite; }
+  .journal { position:relative;min-height:440px;overflow:hidden;border-radius:9px 22px 22px 9px;background:linear-gradient(105deg,color-mix(in srgb,var(--card) 95%,#d8d0c4),var(--card) 9%,var(--card) 92%,color-mix(in srgb,var(--dusk) 52%,var(--card)));border:1px solid color-mix(in srgb,var(--ink) 10%,transparent);box-shadow:inset 5px 0 0 #8b91ad16,inset 7px 0 0 #ffffffa6, 3px 0 0 color-mix(in srgb,var(--card) 80%,var(--dusk)), 6px 2px 0 color-mix(in srgb,var(--dusk) 65%,var(--card)), 18px 24px 0 -10px color-mix(in srgb,var(--sky) 24%,var(--dusk)), 24px 32px 55px #28263d24;transform:rotateY(-7deg) rotateZ(-3.5deg);padding:33px 31px 28px 42px;transform-style:preserve-3d; }
+  .journal:before { content:"";position:absolute;inset:0 auto 0 22px;width:1px;background:color-mix(in srgb,var(--rose) 42%,transparent); }
+  .journal:after { content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,color-mix(in srgb,var(--sky) 10%,transparent) 32px);pointer-events:none; }
+  .journal-content { position:relative;z-index:1; }
+  .journal:before { box-shadow:2px 0 5px #5b52600b; }
+  .page-turn-button { position:absolute;right:13px;bottom:13px;z-index:5;width:34px;height:34px;display:grid;place-items:center;border:1px solid color-mix(in srgb,var(--sky) 24%,var(--dusk));border-radius:50%;background:color-mix(in srgb,var(--card) 92%,transparent);color:var(--sky);font-size:19px;box-shadow:0 3px 8px #2a26350d;transition:transform .32s cubic-bezier(.2,1.6,.4,1),box-shadow .25s,background .25s;cursor:pointer;}
+  .page-turn-button:hover { transform:translate(2px,-2px) rotate(8deg);box-shadow:0 7px 15px #2a26351a;background:var(--card); }
+  .page-turn-button:active { transform:scale(.9); }
+  .page-turn-button:focus-visible { outline:2px solid var(--sky);outline-offset:3px; }
+  .page-flip-sheet { position:absolute;inset:0;z-index:4;padding:33px 31px 28px 42px;border-radius:9px 22px 22px 9px;transform-origin:left center;transform-style:preserve-3d;backface-visibility:hidden;pointer-events:none;background:linear-gradient(100deg,color-mix(in srgb,var(--card) 92%,#d7d0c5),var(--card) 12%,var(--card) 88%,color-mix(in srgb,var(--dusk) 35%,var(--card)));box-shadow:inset -8px 0 14px #29263b0b,5px 0 9px #29263b12;animation:real-page-turn .82s cubic-bezier(.64,.02,.35,1) forwards; }
+  .page-flip-sheet:after { content:"";position:absolute;inset:0;border-radius:inherit;background:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,color-mix(in srgb,var(--sky) 10%,transparent) 32px);transform:rotateY(180deg);backface-visibility:hidden; }
+  .page-flip-sheet .journal-content { backface-visibility:hidden; }
+  @keyframes real-page-turn { 0%{transform:rotateY(0deg);filter:brightness(1)} 45%{filter:brightness(.96)} 100%{transform:rotateY(-178deg);filter:brightness(1)} }
+  .journal-date { display:flex;align-items:center;justify-content:space-between;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--mist); }
+  .journal-heading { font-family:Georgia,Cambria,serif;font-size:31px;line-height:1.13;letter-spacing:-.04em;margin-top:26px; }
+  .journal-body { font-family:Georgia,Cambria,serif;font-size:13px;line-height:2.15;color:var(--mist);margin-top:14px; }
+  .typed-word { color:var(--ink); }
+  .type-caret { display:inline-block;width:1px;height:1em;vertical-align:-.12em;background:var(--sky);animation:caret-blink 1s steps(2,end) infinite; }
+  .journal-mood { display:inline-flex;align-items:center;gap:8px;margin-top:23px;padding:9px 12px;border:1px solid color-mix(in srgb,var(--sage) 75%,var(--dusk));border-radius:999px;background:color-mix(in srgb,var(--sage) 22%,var(--card));font-size:11px;color:var(--ink); }
+  .mood-spark { display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:var(--sage);font-size:13px; }
+  .paper-sticker { position:absolute;right:-17px;top:39px;width:94px;height:94px;display:grid;place-items:center;border-radius:50%;background:var(--rose);color:#493943;font:italic 14px/1.2 Georgia,serif;text-align:center;transform:rotate(11deg);box-shadow:0 12px 25px #5c39431c;animation:sticker-bob 5s ease-in-out infinite; }
+  .floating-note { position:absolute;z-index:3;display:flex;align-items:center;gap:10px;padding:12px 15px;border:1px solid color-mix(in srgb,var(--ink) 8%,var(--dusk));border-radius:17px;background:color-mix(in srgb,var(--card) 93%,transparent);box-shadow:0 12px 32px #32324716;backdrop-filter:blur(12px);font-size:12px;animation:note-bob 5.4s ease-in-out infinite; }
+  .floating-note strong { display:block;font-size:12px;font-weight:600;color:var(--ink); }
+  .floating-note span { display:block;font-size:10px;color:var(--mist);margin-top:2px; }
+  .note-icon { display:grid;place-items:center;width:34px;height:34px;border-radius:12px;background:color-mix(in srgb,var(--sky) 15%,var(--card));color:var(--sky);font-size:17px; }
+  .note-save { left:-35px;top:15%;animation-delay:-1.4s; }
+  .note-mood { right:-35px;bottom:17%;animation-delay:-3s; }
+  .mini-bars { display:flex;align-items:end;gap:3px;height:19px; }
+  .mini-bars i { display:block;width:4px;border-radius:4px;background:var(--sky);transform-origin:bottom;animation:bar-pop 2.8s ease-in-out infinite; }
+  .mini-bars i:nth-child(1){height:7px}.mini-bars i:nth-child(2){height:13px;animation-delay:.12s}.mini-bars i:nth-child(3){height:10px;animation-delay:.24s}.mini-bars i:nth-child(4){height:18px;animation-delay:.36s}.mini-bars i:nth-child(5){height:12px;animation-delay:.48s}
+  .hero-footnote { display:flex;align-items:center;gap:8px;color:var(--mist);font-size:11px;letter-spacing:.01em; }
+  .hero-footnote svg { flex:none; }
+  .reveal { opacity:0;transform:translateY(22px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1); }
+  .reveal.is-visible { opacity:1;transform:translateY(0); }
+  .feature-section { max-width:1160px; }
+  .feature-intro { display:flex;align-items:end;justify-content:space-between;gap:2rem;margin-bottom:2.3rem; }
+  .feature-title { font-size:clamp(2rem,4vw,3.3rem);line-height:1.05;letter-spacing:-.05em; }
+  .feature-item { padding:23px 24px 25px;border:1px solid color-mix(in srgb,var(--ink) 8%,var(--dusk));border-radius:22px;background:color-mix(in srgb,var(--card) 64%,transparent);transition:transform .35s cubic-bezier(.2,1.5,.45,1),box-shadow .3s,border-color .3s; }
+  .feature-item:hover { transform:translateY(-7px) rotate(-.4deg);box-shadow:0 20px 40px #37354a10;border-color:color-mix(in srgb,var(--sky) 35%,var(--dusk)); }
+  .feature-number { display:grid;place-items:center;width:39px;height:39px;border-radius:14px;background:color-mix(in srgb,var(--sky) 14%,var(--card));color:var(--sky);font-family:Georgia,serif;font-size:18px;margin-bottom:20px; }
+  .proof-panel { background:color-mix(in srgb,var(--card) 76%,transparent);border:1px solid var(--dusk);border-radius:24px;padding:clamp(20px,4vw,34px);transition:transform .3s,box-shadow .3s; }
+  .proof-panel:hover { transform:translateY(-3px);box-shadow:0 14px 35px #33334a0d; }
+  .final-cta { position:relative;overflow:hidden;border-radius:30px;background:var(--dusk);padding:clamp(38px,7vw,78px) 20px; }
+  .final-cta:before,.final-cta:after { content:"";position:absolute;border:1px solid color-mix(in srgb,var(--sky) 28%,transparent);border-radius:50%;width:300px;height:300px;pointer-events:none; }
+  .final-cta:before { top:-210px;left:-100px; }.final-cta:after { bottom:-245px;right:-70px;width:380px;height:380px; }
+  .faq-summary { transition:color .2s; }.faq-summary:hover { color:var(--sky); }
+  @keyframes journal-float { 0%,100%{transform:translateY(2px) rotate(-.4deg)} 50%{transform:translateY(-13px) rotate(.5deg)} }
+  @keyframes shadow-breathe { 0%,100%{transform:scaleX(1) rotate(-7deg);opacity:.8}50%{transform:scaleX(.82) rotate(-7deg);opacity:.5} }
+  @keyframes halo-breathe { 0%,100%{transform:scale(.95);opacity:.8}50%{transform:scale(1.06);opacity:1} }
+  @keyframes note-bob { 0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-9px) rotate(1deg)} }
+  @keyframes sticker-bob { 0%,100%{transform:translateY(0) rotate(11deg)}50%{transform:translateY(-6px) rotate(6deg)} }
+  @keyframes bar-pop { 0%,100%{transform:scaleY(.75)}50%{transform:scaleY(1)} }
+  @keyframes caret-blink { 50%{opacity:0} }
+  @media(max-width:767px){ .hero-shell{padding-top:3.2rem;padding-bottom:3.5rem}.hero-art{min-height:450px;margin-top:1rem}.journal-stage{width:min(82%,330px)}.journal{min-height:390px;padding:28px 24px 24px 35px}.page-flip-sheet{padding:28px 24px 24px 35px}.page-turn-button{right:10px;bottom:10px;width:31px;height:31px}.journal-heading{font-size:27px}.paper-sticker{right:-13px;top:28px;width:78px;height:78px;font-size:12px}.note-save{left:-8px;top:9%}.note-mood{right:-7px;bottom:9%}.orbit{width:350px;height:350px}.art-halo{width:88vw}.feature-intro{display:block}.feature-intro p{margin-top:1rem} }
+  @media(max-width:390px){.hero-title{font-size:2.9rem}.hero-art{min-height:410px}.floating-note{padding:9px 10px}.note-icon{width:29px;height:29px}.journal{min-height:365px}.page-flip-sheet{padding:25px 20px 22px 31px}.journal-body{font-size:12px}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.reveal{opacity:1;transform:none} .journal-stage,.journal-shadow,.art-halo,.orbit,.paper-sticker,.floating-note,.mini-bars i,.page-flip-sheet{animation:none!important}.page-turn-button{transition:none!important} .primary-cta,.feature-item,.proof-panel{transition:none!important}}
+
+</style>
+</head>
+<body class="min-h-screen">
+
+<header class="site-header max-w-6xl mx-auto px-6 md:px-10 pt-6 flex items-center justify-between">
+  <a href="index.html" class="flex items-center gap-3 font-serif text-xl" aria-label="Nuvola Diary home">
+    <span class="brand-mark"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="var(--sky)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19.5 18.5a4 4 0 0 0-.8-7.9A6.3 6.3 0 0 0 6.5 9.2a4.6 4.6 0 0 0-.3 9.2z"/><path d="M8 14.2c1.5-1.3 3.1-1.3 4.7 0s3.1 1.3 4.4 0" opacity=".65"/></svg></span>
+    <span>nuvola<span class="text-mist">.</span></span>
+  </a>
+  <div class="flex items-center gap-3"><span class="hidden sm:block text-xs text-mist">A little space for you</span><a href="#download" class="text-sm rounded-full border border-dusk px-5 py-2.5 hover:bg-dusk/60 transition">Get the desktop app <span aria-hidden="true">↓</span></a></div>
+</header>
+
+<!-- HERO -->
+<section class="hero-shell max-w-6xl mx-auto px-6 md:px-10 relative">
+  <div class="grid md:grid-cols-[1.05fr_.95fr] gap-7 lg:gap-12 items-center relative">
+    <div class="relative z-10">
+      <div class="hero-kicker mb-7"><span class="kicker-dot"></span> YOUR MIND, WITH ROOM TO BREATHE</div>
+      <h1 class="hero-title font-serif">Somewhere soft<br>to <em>land your thoughts.</em></h1>
+      <p class="hero-copy mt-7">A little corner of the internet that belongs only to you. Keep the small moments, untangle the big ones, and get to know yourself — one honest line at a time.</p>
+      <div class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+        <a href="landing.html" class="primary-cta rounded-full text-base font-medium px-7 py-4">Open your diary <span class="text-lg" aria-hidden="true">↗</span></a>
+        <a href="#download" class="secondary-cta text-sm text-mist hover:text-ink">Get the desktop app <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-footnote mt-8"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg> No account. No cloud. Your words stay right here.</div>
+    </div>
+    <div class="hero-art" aria-label="A softly animated preview of a personal journal">
+      <div class="art-halo" aria-hidden="true"></div><div class="orbit" aria-hidden="true"></div>
+      <div class="journal-stage" id="journal-stage">
+        <div class="journal-shadow" aria-hidden="true"></div>
+        <article class="journal" aria-label="Example journal page">
+          <div class="journal-content">
+            <div class="journal-date"><span>MONDAY, 08:42 AM</span><span>№ 014</span></div>
+            <h2 class="journal-heading">A softer kind<br>of morning.</h2>
+            <p class="journal-body">I took the long way home today.<br>Nothing extraordinary happened.<br><span class="typed-word" id="typed-word">The sky was doing that thing</span><span class="type-caret" aria-hidden="true"></span><br>where everything feels possible.<br><br>Maybe that's enough for now.</p>
+            <div class="journal-mood"><span class="mood-spark" aria-hidden="true">☼</span><span>A little more at ease</span></div>
+          </div>
+          <button class="page-turn-button" id="turn-page" type="button" aria-label="Turn to the next page of the journal" title="Turn the page">↗</button>
+          <div class="paper-sticker" aria-hidden="true">keep the<br>little things</div>
+        </article>
+      </div>
+      <div class="floating-note note-save"><div class="note-icon" aria-hidden="true">✓</div><div><strong>Safely tucked away</strong><span>Your words stay on this device</span></div></div>
+      <div class="floating-note note-mood"><div class="note-icon" aria-hidden="true"><span class="mini-bars"><i></i><i></i><i></i><i></i><i></i></span></div><div><strong>A feeling, noticed</strong><span>No grades. Just patterns.</span></div></div>
+    </div>
+  </div>
+  <div class="mt-12 pt-5 border-t border-dusk flex flex-wrap items-center justify-between gap-3 text-xs text-mist"><span>MADE FOR THE THINGS YOU DON’T SAY OUT LOUD</span><span class="flex items-center gap-2"><span class="kicker-dot"></span> Private by design <span aria-hidden="true">·</span> Works offline</span></div>
+</section>
+
+<!-- BENEFITS -->
+<section id="why-nuvola" class="feature-section max-w-6xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-dusk">
+  <div class="feature-intro reveal"><div><div class="text-xs tracking-[.18em] text-mist mb-4">A SMALL SPACE, JUST FOR YOU</div><h2 class="feature-title font-serif">Less keeping up.<br><span style="color:var(--sky)">More checking in.</span></h2></div><p class="text-mist leading-7 max-w-sm">No pressure to be profound. No perfect routine to maintain. Just a place to meet yourself where you are.</p></div>
+  <div class="grid md:grid-cols-3 gap-4 md:gap-5">
+    <article class="feature-item reveal"><div class="feature-number">01</div><h3 class="font-serif text-xl mb-3">Your words are yours.</h3><p class="text-mist leading-7 text-sm">Your entries live in your browser’s own database — not on a server. Private isn’t a premium feature here. It’s the starting point.</p><div class="mt-5 text-xs tracking-wide text-mist">PRIVATE, BY DEFAULT <span aria-hidden="true">↗</span></div></article>
+    <article class="feature-item reveal" style="transition-delay:90ms"><div class="feature-number" style="background:color-mix(in srgb,var(--rose) 24%,var(--card));color:var(--ink)">02</div><h3 class="font-serif text-xl mb-3">Feelings can move.</h3><p class="text-mist leading-7 text-sm">Check in with a mood, then notice how your inner weather shifts over time. Curiosity over judgment, always.</p><div class="mt-5 text-xs tracking-wide text-mist">YOUR INNER WEATHER <span aria-hidden="true">↗</span></div></article>
+    <article class="feature-item reveal" style="transition-delay:180ms"><div class="feature-number" style="background:color-mix(in srgb,var(--sage) 35%,var(--card));color:var(--ink)">03</div><h3 class="font-serif text-xl mb-3">A gentle second voice.</h3><p class="text-mist leading-7 text-sm">If you choose, an optional AI coach can offer a small reflection using a model that runs on your device. You’re always in control.</p><div class="mt-5 text-xs tracking-wide text-mist">OPTIONAL, NEVER PUSHY <span aria-hidden="true">↗</span></div></article>
+  </div>
+</section>
+
+<!-- PROVE IT YOURSELF -->
+<section id="prove-it" class="max-w-6xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-dusk">
+  <h2 class="font-serif text-3xl mb-2">Don't take our word for it</h2>
+  <p class="text-mist max-w-2xl leading-7 mb-10">Nuvola makes a strong claim — that your writing never leaves your device. Here are two ways to check that in about a minute, no technical background required.</p>
+
+  <div class="grid md:grid-cols-2 gap-8">
+    <div class="proof-panel">
+      <h3 class="font-medium mb-3">Watch the Network tab</h3>
+      <ol class="text-sm text-mist leading-7 list-decimal list-inside space-y-1">
+        <li>Open the app and press F12 (or right-click → Inspect).</li>
+        <li>Click the "Network" tab in the panel that opens.</li>
+        <li>Write a diary entry, save it, and ask the coach for feedback.</li>
+        <li>Look through the requests: you'll see the app's own files and, only if you turned the coach on, requests fetching model files — never one carrying your words.</li>
+      </ol>
+    </div>
+    <div class="proof-panel">
+      <h3 class="font-medium mb-3">Turn on airplane mode</h3>
+      <ol class="text-sm text-mist leading-7 list-decimal list-inside space-y-1">
+        <li>Load the app once (and download the coach, if you want it) while connected.</li>
+        <li>Switch your phone or laptop to airplane mode.</li>
+        <li>Keep writing, checking in, and asking the coach for feedback.</li>
+        <li>Everything keeps working — there's nowhere for a request to go.</li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+
+<!-- DESKTOP APP -->
+<section id="download" class="max-w-6xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-dusk">
+  <div class="grid md:grid-cols-[.9fr_1.1fr] gap-8 lg:gap-14 items-center">
+    <div class="reveal">
+      <div class="text-xs tracking-[.18em] text-mist mb-4">A LITTLE HOME ON YOUR DESKTOP</div>
+      <h2 class="font-serif text-4xl md:text-5xl leading-tight mb-5" style="letter-spacing:-.05em">Your own quiet corner.<br><span style="color:var(--sky)">Right on your computer.</span></h2>
+      <p class="text-mist leading-7 max-w-lg mb-6">Nuvola is being packaged for Windows, macOS, and Linux. Your journal stays on your device, and you can choose whether to download an optional local AI model.</p>
+      <div class="flex flex-wrap gap-3 mb-5">
+        <span class="hero-kicker">Windows · .msi / .exe</span><span class="hero-kicker">macOS · .dmg</span><span class="hero-kicker">Linux · AppImage / .deb</span>
+      </div>
+      <p class="text-xs text-mist leading-6">Installers are produced by the project's cross-platform build workflow. Once this project is published to GitHub and a version tag is pushed, GitHub Actions builds the installers and attaches them to the release. No fake download links or third-party installers.</p>
+    </div>
+    <div class="proof-panel reveal" style="transition-delay:100ms">
+      <div class="flex items-center gap-3 mb-5"><div class="feature-number" style="margin:0">AI</div><div><h3 class="font-serif text-2xl">Choose your own local model</h3><p class="text-sm text-mist mt-1">Optional · one-time model download</p></div></div>
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="rounded-2xl border border-dusk p-4" style="background:color-mix(in srgb,var(--sage) 17%,var(--card))"><div class="text-xs tracking-wide text-mist mb-2">LIGHT & QUICK</div><h4 class="font-medium text-lg">Qwen 0.5B</h4><p class="text-sm text-mist leading-6 mt-2">Around 450 MB. A smaller download for quicker reflections and lower memory use.</p></div>
+        <div class="rounded-2xl border border-dusk p-4" style="background:color-mix(in srgb,var(--sky) 10%,var(--card))"><div class="text-xs tracking-wide text-mist mb-2">RICHER REFLECTIONS</div><h4 class="font-medium text-lg">Llama 3.2 · 1B</h4><p class="text-sm text-mist leading-6 mt-2">Roughly 0.8–1 GB of model/runtime assets. Better suited to newer computers.</p></div>
+      </div>
+      <p class="text-xs text-mist leading-6 mt-4">Model files download only after you opt in. The first model download needs an internet connection; after it is cached, the coach can run on-device where WebGPU and available memory support it. Your diary text is not sent to a Nuvola server.</p>
+      <a href="landing.html" class="primary-cta rounded-full font-medium px-6 py-3 mt-5">Try Nuvola in your browser <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="max-w-6xl mx-auto px-6 md:px-10 py-16 md:py-24 border-t border-dusk">
+  <h2 class="font-serif text-3xl mb-8">Questions</h2>
+  <div class="divide-y divide-dusk max-w-3xl">
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">Is my writing really private?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Yes. Entries are stored in your browser's local database. There's no login, no cloud sync, and no server that ever sees your text — see "Prove it yourself" above.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">What AI model powers the coach?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Choose Qwen2.5 0.5B (~450 MB) for a smaller, faster download or Llama 3.2 1B (~0.8–1 GB depending on runtime files) for a larger model. Both run locally through WebGPU when supported; model weights are fetched only after you opt in.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">Does it work without internet?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Yes, once loaded. Writing and mood check-ins work with zero downloads. The coach needs a one-time download; after that it works fully offline.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">Will it work on an older phone?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">The journal and mood check-ins work everywhere. The AI coach needs a browser with WebGPU (recent Chrome, Edge, or Safari). If your device doesn't support it, the coach quietly stays off — nothing else is affected.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">I opened this inside Instagram or Facebook — why is the coach missing?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Those apps' built-in browsers block the technology the coach needs. Tap the ⋯ menu and choose "Open in Chrome" or "Open in Safari" to unlock it. Journaling still works fine either way.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">What does it cost?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Nothing. There's no account and no subscription — it's a page that runs entirely in your browser.</p>
+    </details>
+    <details class="py-4 group">
+      <summary class="faq-summary cursor-pointer font-medium list-none flex justify-between items-center">Can I get my entries out if I switch devices?<span class="text-mist group-open:rotate-45 transition-transform">+</span></summary>
+      <p class="text-mist leading-7 mt-2">Yes — export a backup file from the "You" tab and import it on another device. Because nothing syncs automatically, this is the one manual step privacy asks of you.</p>
+    </details>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="max-w-6xl mx-auto px-6 md:px-10 py-12 md:py-20 border-t border-dusk">
+  <div class="final-cta text-center reveal"><div class="relative z-10"><div class="text-xs tracking-[.2em] text-mist mb-5">WHENEVER YOU’RE READY</div><h2 class="font-serif text-4xl md:text-6xl mb-6" style="letter-spacing:-.055em">Come as you are.<br><em style="color:var(--sky);font-weight:400">Leave a little lighter.</em></h2><p class="text-mist leading-7 max-w-md mx-auto mb-8">One sentence is enough to begin. Your page will be right here when you need it.</p><a href="landing.html" class="primary-cta rounded-full text-base font-medium px-8 py-4">Write your first line <span class="text-lg" aria-hidden="true">↗</span></a></div></div>
+</section>
+
+<footer class="max-w-6xl mx-auto px-6 md:px-10 py-8 text-xs text-mist flex flex-wrap items-center justify-between gap-3">
+  <span>Nuvola Diary — a quiet place to be human.</span><span>Diary entries stay local. Optional model downloads use their model host.</span>
+</footer>
+
+<script>
+  // Tiny spring-like pointer response; no dependency and disabled for touch/reduced motion.
+  (() => {
+    const stage = document.getElementById('journal-stage');
+    const card = stage && stage.querySelector('.journal');
+    const art = document.querySelector('.hero-art');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (stage && art && !reduced && finePointer) {
+      let frame = 0, tx = 0, ty = 0, rx = 0, ry = 0;
+      const animate = () => {
+        rx += (tx-rx)*.085; ry += (ty-ry)*.085;
+        if(card) card.style.transform = `rotateX(${rx}deg) rotateY(${ry-7}deg) rotateZ(${-3.5+rx*.08}deg)`;
+        if (Math.abs(tx-rx)>.02 || Math.abs(ty-ry)>.02) frame=requestAnimationFrame(animate); else frame=0;
+      };
+      art.addEventListener('pointermove', e => {
+        const r=art.getBoundingClientRect(); tx=((e.clientY-r.top)/r.height-.5)*-7; ty=((e.clientX-r.left)/r.width-.5)*9;
+        if(!frame) frame=requestAnimationFrame(animate);
+      });
+      art.addEventListener('pointerleave', () => {tx=0;ty=0;if(!frame)frame=requestAnimationFrame(animate);});
+    }
+    // A tiny interactive page-turn on the illustrated journal. The sheet is a
+    // decorative clone; the actual page changes only after the flip completes.
+    const book = document.querySelector('.journal');
+    const turnButton = document.getElementById('turn-page');
+    if (book && turnButton) {
+      const pageContent = book.querySelector('.journal-content');
+      const pages = [
+        { day: 'MONDAY, 08:42 AM', number: '№ 014', title: 'A softer kind<br>of morning.', body: 'I took the long way home today.<br>Nothing extraordinary happened.<br><span class="typed-word">The sky was doing that thing</span><span class="type-caret" aria-hidden="true"></span><br>where everything feels possible.<br><br>Maybe that’s enough for now.', mood: 'A little more at ease', symbol: '☼' },
+        { day: 'THURSDAY, 07:16 PM', number: '№ 015', title: 'The good in<br>ordinary things.', body: 'Warm tea between my hands.<br>A song I had almost forgotten.<br><span class="typed-word">A message from an old friend.</span><br>Small things, but they stayed.<br><br>I want to remember this.', mood: 'Quietly grateful', symbol: '✳' },
+        { day: 'SUNDAY, 09:03 PM', number: '№ 016', title: 'Room to begin<br>again.', body: 'This week wasn’t perfect.<br>Some things felt heavier than I expected.<br><span class="typed-word">But I kept showing up.</span><br>That counts for something.<br><br>Tomorrow can be a fresh page.', mood: 'A little hopeful', symbol: '☾' }
+      ];
+      let pageIndex = 0, turning = false;
+      turnButton.addEventListener('click', () => {
+        if (turning || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          if (!turning && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            pageIndex = (pageIndex + 1) % pages.length;
+            const p = pages[pageIndex];
+            pageContent.querySelector('.journal-date span:first-child').textContent = p.day;
+            pageContent.querySelector('.journal-date span:last-child').textContent = p.number;
+            pageContent.querySelector('.journal-heading').innerHTML = p.title;
+            pageContent.querySelector('.journal-body').innerHTML = p.body;
+            pageContent.querySelector('.journal-mood span:last-child').textContent = p.mood;
+            pageContent.querySelector('.mood-spark').textContent = p.symbol;
+          }
+          return;
+        }
+        turning = true;
+        const sheet = document.createElement('div');
+        sheet.className = 'page-flip-sheet';
+        sheet.setAttribute('aria-hidden', 'true');
+        sheet.innerHTML = pageContent.innerHTML;
+        book.insertBefore(sheet, turnButton);
+        const finish = () => {
+          if (!turning) return;
+          pageIndex = (pageIndex + 1) % pages.length;
+          const p = pages[pageIndex];
+          pageContent.querySelector('.journal-date span:first-child').textContent = p.day;
+          pageContent.querySelector('.journal-date span:last-child').textContent = p.number;
+          pageContent.querySelector('.journal-heading').innerHTML = p.title;
+          pageContent.querySelector('.journal-body').innerHTML = p.body;
+          pageContent.querySelector('.journal-mood span:last-child').textContent = p.mood;
+          pageContent.querySelector('.mood-spark').textContent = p.symbol;
+          sheet.remove(); turning = false;
+        };
+        sheet.addEventListener('animationend', finish, { once: true });
+        window.setTimeout(finish, 1000);
+      });
+    }
+    const revealItems = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && !reduced) {
+      const observer = new IntersectionObserver(entries => entries.forEach(entry => {
+        if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target);}
+      }), {threshold:.12});
+      revealItems.forEach(el=>observer.observe(el));
+    } else revealItems.forEach(el=>el.classList.add('is-visible'));
+  })();
+</script>
+<script>
+  const mode = localStorage.getItem('nuvola.theme') || 'system';
+  const dark = mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', dark);
+</script>
+</body>
+</html>
